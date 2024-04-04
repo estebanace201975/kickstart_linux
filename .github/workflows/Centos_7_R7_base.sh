@@ -1,6 +1,25 @@
 #!/bin/bash
 
-# Configuración del usuario root
+# Convertir el script a formato Unix (eliminar caracteres de retorno de carro)
+dos2unix configuracion.sh
+
+# Definir la lista de paquetes a instalar
+paquetes=("perl" "tuned" "man" "vim" "openssh-clients" "bind" "bind-utils")
+
+# Validar e instalar los paquetes si no están presentes
+for paquete in "${paquetes[@]}"; do
+    rpm -q "$paquete" &> /dev/null
+    if [ $? -ne 0 ]; then
+        yum install -y "$paquete"
+    else
+        echo "El paquete $paquete ya está instalado. Omitiendo la instalación."
+    fi
+done
+
+# Continuar con el resto del script
+# Configuración automática de CentOS 7 con entorno gráfico y parámetros personalizados
+
+# Root password
 echo "HC37nn1." | passwd --stdin root
 
 # Desactivar SELinux
@@ -15,10 +34,10 @@ sysctl -p
 systemctl stop firewalld
 systemctl disable firewalld
 
-# Configuración de la zona horaria
+# Configurar la zona horaria
 timedatectl set-timezone America/Mexico_City
 
-# Configuración del idioma y teclado
+# Configurar idioma y teclado
 localectl set-locale LANG=en_US.UTF-8
 localectl set-keymap la-latin1
 
@@ -66,10 +85,13 @@ gpgcheck=0
 EOF
 
 # Instalación de paquetes
-yum groupinstall -y "GNOME Desktop" "Graphical Administration Tools"
-yum install -y perl tuned man vim openssh-clients bind bind-utils
+yum groupinstall -y "Server with GUI"
 
 # Configuración para iniciar en modo gráfico
 ln -sf /lib/systemd/system/runlevel5.target /etc/systemd/system/default.target
 
 echo "Configuración finalizada."
+
+# Eliminar el script
+rm -f "$0"
+
